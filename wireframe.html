@@ -1,0 +1,160 @@
+<!doctype html>
+
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FocusFlash - Wireframe</title>
+  <style>
+    :root{--bg:#f7f7f9;--card:#ffffff;--muted:#6b7280;--accent:#111827}
+    html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    .app{max-width:1000px;margin:24px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0;color:var(--accent)}
+    .nav{display:flex;gap:8px}
+    .nav button{background:transparent;border:1px solid #e5e7eb;padding:8px 12px;border-radius:8px;font-size:14px}
+    .frame{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 1px 0 rgba(0,0,0,0.03);min-height:520px}
+    .layout{display:grid;grid-template-columns:1fr 320px;gap:16px}
+    /* Left big area - screens */
+    .screen{display:none}
+    .screen.active{display:block}
+    .camera{background:#1118271a;border-radius:8px;height:320px;display:flex;align-items:center;justify-content:center;border:2px dashed #e5e7eb}
+    .camera .label{color:var(--muted)}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .btn{padding:10px 14px;border-radius:8px;border:0;font-weight:600;cursor:pointer}
+    .btn.primary{background:#111827;color:white}
+    .btn.ghost{background:transparent;border:1px solid #e5e7eb;color:var(--accent)}
+    .small{font-size:13px;color:var(--muted)}
+    /* Right column - quick widgets */
+    .widgets{display:flex;flex-direction:column;gap:12px}
+    .card{background:var(--card);border-radius:10px;padding:12px;border:1px solid #eef2f7}
+    .chart{height:140px;border-radius:6px;background:linear-gradient(90deg,#f3f4f6,#ffffff)}
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{padding:10px;border-radius:8px;background:linear-gradient(180deg,#fff,#fafafa);border:1px solid #f0f3f6}
+    footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+    /* Flash overlay for demo */
+    .flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;transition:opacity 180ms}
+    .flash.on{opacity:0.9}
+    /* Responsive */
+    @media (max-width:880px){.layout{grid-template-columns:1fr}.widgets{order:2}.frame{min-height:640px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>FocusFlash - Wireframe</h1>
+      <div class="nav">
+        <button onclick="show('focus')">Odak</button>
+        <button onclick="show('stats')">İstatistik</button>
+        <button onclick="show('settings')">Ayarlar</button>
+        <button onclick="show('history')">Geçmiş</button>
+      </div>
+    </header><div class="layout">
+  <div class="frame">
+    <!-- Focus Screen -->
+    <section id="focus" class="screen active">
+      <h2>Odak Ekranı</h2>
+      <p class="small">Canlı dikkat izleme. Kamera önizlemesi burada olacak.</p>
+      <div class="camera" id="cameraArea">
+        <div style="text-align:center">
+          <div class="label">Kamera Görüntüsü (örn. video)</div>
+          <div class="small" style="margin-top:8px">Göz yönü ve baş pozisyonu izlenecek</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn primary" id="startBtn" onclick="startFocus()">Odak Modunu Başlat</button>
+        <button class="btn ghost" id="stopBtn" onclick="stopFocus()" disabled>Odak Modunu Durdur</button>
+        <div style="margin-left:auto;text-align:right">
+          <div class="small">Sayaç</div>
+          <div id="timer" style="font-weight:700">00:00:00</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px" class="small">Son uyarı: <span id="lastFlash">—</span></div>
+    </section>
+
+    <!-- Stats Screen -->
+    <section id="stats" class="screen">
+      <h2>İstatistikler</h2>
+      <p class="small">Günlük ve haftalık odak süresi.</p>
+      <div class="chart card" style="margin-top:12px">Grafik alanı (placeholder)</div>
+      <div style="margin-top:12px" class="card">
+        <div class="small">Bugün</div>
+        <div style="font-weight:700">1 saat 25 dk</div>
+        <button class="btn primary" style="margin-top:10px" onclick="show('focus')">Yeni Oturum Başlat</button>
+      </div>
+    </section>
+
+    <!-- Settings Screen -->
+    <section id="settings" class="screen">
+      <h2>Ayarlar</h2>
+      <div class="card" style="margin-top:12px">
+        <label class="small">Flash Yoğunluğu</label>
+        <input type="range" id="flashRange" min="1" max="10" value="6" style="width:100%;margin-top:8px">
+        <div style="height:12px"></div>
+        <label class="small">Uyarı Sıklığı (saniye)</label>
+        <input type="number" id="freq" min="3" max="60" value="8" style="width:100%;margin-top:8px;padding:8px;border-radius:6px;border:1px solid #e6e9ee">
+        <div style="height:12px"></div>
+        <label class="small">Kamera İzinleri</label>
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn ghost">İzin Ver</button><button class="btn ghost">İzni Kaldır</button></div>
+      </div>
+    </section>
+
+    <!-- History Screen -->
+    <section id="history" class="screen">
+      <h2>Geçmiş Oturumlar</h2>
+      <p class="small">Önceki odak oturumlarının zaman damgaları ve süreleri.</p>
+      <div class="list" style="margin-top:12px">
+        <div class="item">12 Ekim — 1s 45dk</div>
+        <div class="item">13 Ekim — 1s 10dk</div>
+        <div class="item">14 Ekim — 2s 05dk</div>
+      </div>
+    </section>
+
+  </div>
+
+  <aside class="widgets">
+    <div class="card">
+      <div class="small">Hızlı İstatistik</div>
+      <div style="font-weight:700;margin-top:8px">Toplam bugün: 1s 25dk</div>
+    </div>
+
+    <div class="card">
+      <div class="small">Ayar Kısayolları</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn ghost" onclick="show('settings')">Flash</button>
+        <button class="btn ghost" onclick="show('settings')">Kamera</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small">Hızlı Başlat</div>
+      <button class="btn primary" style="width:100%;margin-top:8px" onclick="startFocus()">Hemen Başlat</button>
+    </div>
+  </aside>
+</div>
+
+<footer class="small">Wireframe. Gerçek kamera ve model entegrasyonu prototip aşamasında eklenecek.</footer>
+
+  </div>  <div class="flash" id="flash"></div>  <script>
+    let current='focus';
+    function show(id){
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      current=id;
+    }
+
+    // Simple timer + flash demo
+    let timerInterval=null; let seconds=0; let running=false;
+    function format(s){const h=Math.floor(s/3600).toString().padStart(2,'0');const m=Math.floor(s%3600/60).toString().padStart(2,'0');const ss=(s%60).toString().padStart(2,'0');return `${h}:${m}:${ss}`}
+    function startFocus(){ if(running) return; running=true; document.getElementById('startBtn').disabled=true; document.getElementById('stopBtn').disabled=false; timerInterval=setInterval(()=>{seconds++; document.getElementById('timer').innerText=format(seconds); // simulate attention loss randomly
+        if(seconds%8===0){ triggerFlash(); }
+      },1000)}
+    function stopFocus(){ running=false; document.getElementById('startBtn').disabled=false; document.getElementById('stopBtn').disabled=true; clearInterval(timerInterval); timerInterval=null; document.getElementById('lastFlash').innerText='—'; seconds=0; document.getElementById('timer').innerText='00:00:00' }
+    function triggerFlash(){ const f=document.getElementById('flash'); f.classList.add('on'); document.getElementById('lastFlash').innerText=new Date().toLocaleTimeString(); setTimeout(()=>f.classList.remove('on'),140) }
+
+    // keyboard shortcuts for quick testing
+    window.addEventListener('keydown',e=>{ if(e.key==='1') show('focus'); if(e.key==='2') show('stats'); if(e.key==='3') show('settings'); if(e.key==='4') show('history'); if(e.key===' ') { if(!running) startFocus(); else stopFocus(); } })
+  </script></body>
+</html>
